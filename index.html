@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2f7d72">
+<title>Koreaans Vandaag</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+/* Layout: één smalle kolom zoals een telefoon-app; dagkop, weekfocus, takenlijst, apps, instellingen. */
+:root {
+  --bg: #f3f5f6;
+  --surface: #ffffff;
+  --ink: #18201f;
+  --muted: #5d6b69;
+  --line: #dde3e2;
+  --celadon: #2f7d72;
+  --celadon-soft: #e1efec;
+  --persimmon: #c4562b;
+  --done-ink: #8b9896;
+  --display: "Gowun Batang", "Noto Serif KR", Georgia, serif;
+  --body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111615; --surface: #1a2120; --ink: #e6ecea; --muted: #9aa8a5; --line: #2b3534;
+    --celadon: #6cc0b2; --celadon-soft: #1f3330; --persimmon: #ef8a5f; --done-ink: #66726f;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111615; --surface: #1a2120; --ink: #e6ecea; --muted: #9aa8a5; --line: #2b3534;
+  --celadon: #6cc0b2; --celadon-soft: #1f3330; --persimmon: #ef8a5f; --done-ink: #66726f;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 560px; margin: 0 auto; padding-block: 20px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 20px; }
+header { display: flex; flex-direction: column; gap: 6px; }
+.kdate { font-family: var(--display); font-size: 30px; line-height: 1.15; margin: 0; text-wrap: balance; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; color: var(--muted); font-size: 14px; }
+.pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 999px; background: var(--celadon-soft); color: var(--celadon); font-weight: 600; font-size: 13px; }
+.streak { color: var(--persimmon); font-weight: 600; font-variant-numeric: tabular-nums; }
+.progress { display: flex; gap: 4px; margin-top: 6px; }
+.progress span { flex: 1; height: 6px; border-radius: 3px; background: var(--line); transition: background .2s; }
+.progress span.on { background: var(--celadon); }
+.progress-label { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.focus { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.label { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
+.focus-main { font-size: 17px; font-weight: 600; line-height: 1.45; }
+.focus-sub { color: var(--muted); font-size: 14px; }
+.milestone { font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 8px; }
+section h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 8px; font-weight: 600; }
+.tasks { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.task { display: grid; grid-template-columns: 44px 1fr; gap: 4px 10px; padding: 14px 14px 14px 10px; border-top: 1px solid var(--line); }
+.task:first-child { border-top: 0; }
+.check { width: 44px; height: 44px; display: grid; place-items: center; background: none; border: 0; padding: 0; cursor: pointer; grid-row: span 2; align-self: start; }
+.check .box { width: 26px; height: 26px; border-radius: 8px; border: 2px solid var(--line); display: grid; place-items: center; transition: background .15s, border-color .15s; }
+.check:hover .box { border-color: var(--celadon); }
+.check:focus-visible { outline: 2px solid var(--celadon); outline-offset: 2px; border-radius: 10px; }
+.check svg { width: 16px; height: 16px; opacity: 0; }
+.task.done .check .box { background: var(--celadon); border-color: var(--celadon); }
+.task.done .check svg { opacity: 1; }
+.task-head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; min-width: 0; padding-top: 10px; }
+.task-title { font-weight: 600; font-size: 16px; }
+.task.done .task-title { color: var(--done-ink); text-decoration: line-through; }
+.mins { font-size: 13px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.opt { font-size: 11px; color: var(--muted); border: 1px solid var(--line); border-radius: 6px; padding: 0 6px; margin-left: 6px; font-weight: 500; vertical-align: 2px; }
+.task-body { grid-column: 2; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.task-detail { color: var(--muted); font-size: 14px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 4px; min-height: 34px; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--line); color: var(--ink); text-decoration: none; font-size: 13px; font-weight: 500; background: var(--bg); }
+a.chip:hover { border-color: var(--celadon); color: var(--celadon); }
+a.chip:focus-visible, button:focus-visible { outline: 2px solid var(--celadon); outline-offset: 2px; }
+a.chip::after { content: "↗"; font-size: 11px; color: var(--muted); }
+span.chip { border-style: dashed; color: var(--muted); }
+.call { background: var(--celadon-soft); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.call-scn { font-size: 14px; }
+.call-gr { font-size: 13px; color: var(--muted); }
+.btn { min-height: 40px; padding: 8px 14px; border-radius: 10px; border: 0; background: var(--celadon); color: var(--surface); font: inherit; font-weight: 600; font-size: 14px; cursor: pointer; align-self: flex-start; }
+.btn.ghost { background: transparent; color: var(--celadon); border: 1px solid var(--celadon); }
+.copied { font-size: 13px; color: var(--celadon); }
+textarea.fallback { width: 100%; min-height: 120px; font: 13px/1.4 var(--body); border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 8px; }
+.apps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.app { display: flex; flex-direction: column; gap: 2px; padding: 12px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); text-decoration: none; color: var(--ink); min-width: 0; }
+.app:hover { border-color: var(--celadon); }
+.app b { font-weight: 600; font-size: 15px; }
+.app small { color: var(--muted); font-size: 12.5px; }
+.settings { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.settings label { font-size: 14px; display: flex; flex-direction: column; gap: 6px; }
+.settings input { font: inherit; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); max-width: 220px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.note { font-size: 13px; color: var(--muted); }
+.note a { color: var(--celadon); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="kdate" id="kdate">오늘</p>
+    <div class="meta">
+      <span class="pill" id="phasePill">Fase</span>
+      <span id="weekLabel"></span>
+      <span class="streak" id="streak"></span>
+    </div>
+    <div class="progress" id="progress" aria-hidden="true"></div>
+    <div class="progress-label" id="progressLabel"></div>
+  </header>
+
+  <div class="focus" id="focus"></div>
+
+  <section>
+    <h2>Vandaag</h2>
+    <ul class="tasks" id="tasks"></ul>
+  </section>
+
+  <section>
+    <h2>Alle apps</h2>
+    <div class="apps" id="apps"></div>
+  </section>
+
+  <section>
+    <h2>Instellingen</h2>
+    <div class="settings">
+      <label for="startDate">Startdatum van je plan (dag 1 van Hangul-week)
+        <input type="date" id="startDate">
+      </label>
+      <div class="row">
+        <button class="btn ghost" id="resetToday" type="button">Vinkjes van vandaag wissen</button>
+        <span class="note" id="resetMsg" hidden>Gewist.</span>
+      </div>
+      <p class="note">Vinkjes worden alleen op dit apparaat in deze browser bewaard. Het volledige plan staat in <a href="https://claude.ai/artifact/2LkWHnxvnna6YUnSWC6hBY" target="_blank" rel="noopener">Koreaans leren – Telefoonplan</a>.</p>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  var APPS = {
+    anki: { label: "Anki", url: "https://ankiweb.net", sub: "AnkiDroid" },
+    ttmik: { label: "TTMIK", url: "https://talktomeinkorean.com", sub: "Grammaticalessen" },
+    naver: { label: "Naver Dictionary", url: "https://korean.dict.naver.com/koendict/", sub: "Woordenboek + audio" },
+    papago: { label: "Papago", url: "https://papago.naver.com", sub: "Zinnen checken" },
+    youtube: { label: "YouTube", url: "https://www.youtube.com/results?search_query=easy+korean+beginner", sub: "Input met Koreaanse ondertitels" },
+    netflix: { label: "Netflix", url: "https://www.netflix.com", sub: "Dramas, Koreaanse ondertitels" },
+    chatgpt: { label: "ChatGPT", url: "https://chatgpt.com", sub: "AI-bellen in spraakmodus" },
+    gliglish: { label: "Gliglish", url: "https://gliglish.com", sub: "Backup, 10 min/dag gratis" },
+    claude: { label: "Claude", url: "https://claude.ai", sub: "Geschreven zinnen corrigeren" },
+    topik: { label: "TOPIK", url: "https://www.topik.go.kr", sub: "Oefentoetsen" },
+    recorder: { label: "Spraakrecorder", url: null, sub: "Samsung Voice Recorder" },
+    podcast: { label: "Podcast-app", url: null }
+  };
+  // Android-pakketnamen: opent de app als die geïnstalleerd is, anders de website.
+  var PKG = {
+    anki: { pkg: "com.ichi2.anki", launch: true },
+    naver: { pkg: "com.nhn.android.naverdic" },
+    papago: { pkg: "com.naver.labs.translator" },
+    youtube: { pkg: "com.google.android.youtube" },
+    netflix: { pkg: "com.netflix.mediaclient" },
+    chatgpt: { pkg: "com.openai.chatgpt" },
+    claude: { pkg: "com.anthropic.claude" },
+    recorder: { pkg: "com.sec.android.app.voicenote", launch: true }
+  };
+  var IS_ANDROID = /Android/i.test(navigator.userAgent || "");
+  function href(key) {
+    var a = APPS[key], p = PKG[key];
+    if (!IS_ANDROID || !p) return a.url;
+    if (p.launch) return null;
+    // De link openen in de app zelf, zonder website-terugval.
+    var u = new URL(a.url);
+    return "intent://" + u.host + u.pathname + u.search + "#Intent;scheme=https;package=" + p.pkg + ";end";
+  }
+  // App-links in hetzelfde tabblad openen, zodat er geen extra Chrome-tab achterblijft.
+  function setTarget(link, h) {
+    if (h.indexOf("intent:") === 0) return;
+    link.target = "_blank"; link.rel = "noopener";
+  }
+  var APP_GRID = ["anki", "ttmik", "naver", "papago", "youtube", "netflix", "chatgpt", "gliglish", "claude", "recorder", "topik"];
+
+  var HANGUL = [
+    ["Basisklinkers ㅏ ㅓ ㅗ ㅜ ㅡ ㅣ ㅐ ㅔ en basismedeklinkers ㄱ ㄴ ㄷ ㄹ ㅁ ㅂ ㅅ ㅇ ㅈ ㅎ", "Elk teken 10x schrijven, uitspraak naspreken"],
+    ["Geaspireerde ㅋ ㅌ ㅍ ㅊ en gespannen ㄲ ㄸ ㅃ ㅆ ㅉ", "Paren hardop: 가/카/까, 다/타/따, 바/파/빠"],
+    ["Samengestelde klinkers ㅑ ㅕ ㅛ ㅠ ㅒ ㅖ ㅘ ㅙ ㅚ ㅝ ㅞ ㅟ ㅢ", "30 woorden lezen in Naver, audio checken"],
+    ["Lettergreepblokken en 받침: de 7 eindklanken ㄱ ㄴ ㄷ ㄹ ㅁ ㅂ ㅇ", "Koreaans toetsenbord installeren, 30 woorden typen"],
+    ["Klankregel 연음: 한국어 klinkt als 한구거", "20 korte zinnen lezen en naspreken"],
+    ["Klankregel 비음화 (국물 → 궁물) en de ㅎ-regel (좋아요 → 조아요)", "Koreaanse steden, gerechten en merken lezen"],
+    ["Herhaling en test", "50 willekeurige woorden foutloos lezen; Anki installeren en instellen"]
+  ];
+
+  var F1 = {
+    2: ["이에요/예요, 아니에요, 은/는", "Jezelf voorstellen: naam, land, studie"],
+    3: ["이/가, 을/를, 있어요/없어요, 이거/그거/저거", "Dingen om je heen, familie"],
+    4: ["-아요/어요/해요, 안 en -지 않아요", "De 30 meest gebruikte werkwoorden"],
+    5: ["Sino-Koreaanse getallen (일, 이, 삼) met 원, 분, 월, 일", "Geld, data, telefoonnummers"],
+    6: ["Koreaanse getallen (하나, 둘, 셋) met 개, 명, 살, 시", "Tijd, leeftijd, tellen"],
+    7: ["-았/었/했어요, 에 (plaats en tijd), 에서", "Dagritme: opstaan, school, eten"],
+    8: ["-(으)ㄹ 거예요, -고 싶어요, vraagwoorden", "Plannen en wensen"],
+    9: ["-고, -지만, 그리고/그래서/그런데, 도, 만, 하고", "Hobby's: gamen, voetbal, koken"],
+    10: ["-(으)세요, -지 마세요, 못, 에게/한테, 부터/까지", "Winkel en restaurant"],
+    11: ["-(으)ㄹ 수 있어요, -아/어야 돼요, -고 있어요, -아/어서", "Kunnen, moeten, oorzaak"],
+    12: ["-(으)면, -(으)ㄹ게요, -(으)ㄹ까요, -아/어 봐요", "Afspreken en voorstellen doen"],
+    13: ["Onregelmatige werkwoorden (ㅂ, ㄷ, ㅡ, 르, ㄹ)", "Bijvoeglijke naamwoorden: weer, gevoel, uiterlijk"]
+  };
+  var F1CALL = {
+    10: ["Je bent ober in een Koreaans restaurant. Ik bestel eten en drinken.", "-(으)세요, 주세요, 얼마예요"],
+    11: ["Je bent een nieuwe klasgenoot. Vraag wat ik kan en wat ik moet doen deze week.", "-(으)ㄹ 수 있어요, -아/어야 돼요"],
+    12: ["We spreken af voor het weekend. Doe voorstellen en laat mij kiezen.", "-(으)ㄹ까요, -(으)ㄹ게요"],
+    13: ["Vraag wat ik gisteren deed en wat ik morgen ga doen.", "verleden tijd, -(으)ㄹ 거예요"]
+  };
+  var F2 = {
+    14: ["Bijvoeglijke bepalingen -는 / -(으)ㄴ / -(으)ㄹ", "학 (leren), 생 (leven), 인 (mens)"],
+    15: ["-는 것, -(으)ㄴ/는 것 같아요", "대 (groot), 국 (land), 일 (dag)"],
+    16: ["-는데 / -(으)ㄴ데", "시 (tijd), 문 (schrift), 전 (voor)"],
+    17: ["-(으)니까, -기 때문에, -(으)려고, -(으)러 가다", "회 (samenkomen), 사 (bedrijf), 동 (bewegen)"],
+    18: ["-기 전에, -(으)ㄴ 후에, -(으)ㄹ 때, -(으)면서", "자 (zelf), 장 (plaats), 공 (openbaar)"],
+    19: ["Eerbetoon: -(으)시-, 드시다, 계시다, 주무시다, 께서", "기 (energie), 화 (vuur, praten), 정 (juist)"],
+    20: ["-아/어 주다, -아/어도 되다, -(으)면 안 되다", "수 (water, getal), 실 (kamer), 선 (lijn)"],
+    21: ["-네요, -잖아요, -군요, -거나", "교 (onderwijzen), 가 (huis), 방 (kamer)"],
+    22: ["보다, 제일/가장, 더/덜, -게 되다, -아/어지다", "물 (ding), 중 (midden), 소 (klein)"],
+    23: ["반말: -아/어, -야, 응/아니", "외 (buiten), 신 (nieuw), 내 (binnen)"],
+    24: ["Indirecte rede: -다고 해요, -냐고, -자고, -(으)라고", "Herhaling"],
+    25: ["Klankregels: 경음화, 유음화, 구개음화", "Herhaling"],
+    26: ["Herhaling en TOPIK I oefentoets", "—"]
+  };
+  var F2CALL = {
+    14: ["Je bent een Koreaanse student die mij net ontmoet. Vraag naar mijn studie, hobby's en familie.", "-는 / -(으)ㄴ / -(으)ㄹ"],
+    15: ["Vraag naar mijn favoriete eten, films en games, en waarom.", "-는 것, -(으)ㄴ/는 것 같아요"],
+    16: ["Je bent een vriend. Vraag wat ik gisteren deed en vraag door.", "-는데"],
+    17: ["Je bent een collega. Vraag waarom ik Koreaans leer en wat ik dit jaar wil bereiken.", "-(으)니까, -기 때문에, -(으)려고"],
+    18: ["Vraag naar mijn dagritme: wat doe ik voor en na school en tijdens het sporten.", "-기 전에, -(으)ㄴ 후에, -(으)ㄹ 때"],
+    19: ["Je bent de grootmoeder van een Koreaanse vriend. Ik moet beleefd tegen je praten.", "-(으)시-, 드시다, 계시다"],
+    20: ["Je bent winkelmedewerker. Ik vraag om hulp en vraag wat wel en niet mag.", "-아/어 주세요, -아/어도 돼요, -(으)면 안 돼요"],
+    21: ["Beschrijf foto's van jouw reis. Ik reageer verrast en stel vragen.", "-네요, -군요, -잖아요"],
+    22: ["Vergelijk met mij Nederland en Korea: eten, weer, steden, studie.", "보다, 제일, -게 되다"],
+    23: ["Je bent een vriend van mijn leeftijd. We praten in 반말.", "반말"],
+    24: ["Vertel wat jouw vrienden zeiden over het weekend. Ik geef het door aan een derde.", "-다고 해요, -자고, -(으)라고"],
+    25: ["Je bent een Koreaanse student die mij net ontmoet. Vraag naar mijn studie, hobby's en familie. Praat in sneller tempo.", "alles uit fase 2"],
+    26: ["Je bent de grootmoeder van een Koreaanse vriend. Ik moet beleefd tegen je praten. Praat in sneller tempo.", "alles uit fase 2"]
+  };
+  var F3 = {
+    7: ["-(으)ㄴ 적이 있다, -(으)ㄹ 줄 알다, -아/어 버리다, -아/어 놓다/두다", "Werk, stage en studie (회계, 예산, 회사, 보고서)",
+        "Sollicitatiegesprek voor een finance-stage bij een Koreaans bedrijf in Nederland.", "Vraag naar dingen die ik nooit eerder heb gedaan en dingen die ik kan."],
+    8: ["-느라고, -는 바람에, -다가, -는 김에", "Emoties en relaties",
+        "Ik kom te laat op een afspraak met jou. Vraag waarom en wees een beetje boos.", "Een vriend heeft ruzie met mij. We praten het uit."],
+    9: ["-기로 하다, -(으)ㄹ까 하다, -(으)ㄹ 텐데, -(으)ㄹ 뻔했다", "Gezondheid en lichaam",
+        "Je bent huisarts. Ik beschrijf klachten.", "We maken samen plannen voor volgend jaar."],
+    10: ["-더라고요, -던, -(으)ㄴ/는 편이다, -(으)ㄴ/는 대로", "Reizen en Korea",
+        "Je bent reisagent. We plannen een reis van twee weken door Korea.", "Vraag naar een plek waar ik ben geweest en hoe het was."],
+    11: ["Passief en causatief (보이다, 들리다, 먹이다, 입히다), -도록, -게", "Meningen geven en discussiëren",
+        "Discussie: is AI goed voor het onderwijs? Neem jij steeds de andere kant.", "Probeer mij te overtuigen een product te kopen; ik twijfel."],
+    12: ["합니다-stijl actief, herhaling, TOPIK II oefentoets", "Nieuws en maatschappij",
+        "Formeel bedrijfsbezoek: ik stel mezelf voor in 합니다-stijl.", "Bespreek met mij een nieuwsonderwerp van deze week."]
+  };
+  var F4 = {
+    13: ["Spreektaal-samentrekkingen (거, 걸, 건, 이게) en 반말 vloeiend",
+         "Vrij gesprek in 반말 over de aflevering die ik net keek.", "Vriendengesprek over het weekend."],
+    14: ["Schrijftaal: -(으)며, -고자, -에 따라, -에 대해, -(으)ㄴ/는 반면",
+         "Een korte presentatie van mij over mijn studie, met vragen van jou.", "Een formele klacht bij een bedrijf."],
+    15: ["Nuance: -(으)ㄹ 리가 없다, -기는 하다, -(으)ㄹ 만하다, -는 척하다",
+         "Roddelen over een drama-personage.", "Mij betrappen op een leugen terwijl ik het ontken."],
+    16: ["20 uitdrukkingen en spreekwoorden (속담), spreektaal uit dramas",
+         "Een discussie waarin ik minstens 3 spreekwoorden gebruik.", "Een spontaan onderwerp dat jij kiest."],
+    17: ["Je zwakste punten: fouten die steeds terugkomen",
+         "Herhaal het scenario waarin ik de meeste fouten maakte.", "Herhaal het op één na moeilijkste scenario."],
+    18: ["Herhaling en TOPIK II oefentoets",
+         "Een gesprek van 30 minuten over een willekeurig onderwerp.", "Geef aan het eind een inschatting van mijn TOPIK-spreekniveau."]
+  };
+  var MILESTONES = [
+    "Mijlpaal: elk woord correct hardop lezen, ook als je de betekenis niet kent.",
+    "Mijlpaal: 1 minuut jezelf voorstellen zonder te stoppen; ~800 kaarten in Anki.",
+    "Mijlpaal: TOPIK I oefentoets ≥ 140/200 (niveau 2); 10 minuten hardop over je week vertellen.",
+    "Mijlpaal: 20 minuten praten zonder Engels; TOPIK II oefentoets ≥ 120/300 (niveau 3).",
+    "Mijlpaal: TOPIK II oefentoets ≥ 150/300 (niveau 4); 30 minuten over elk alledaags onderwerp."
+  ];
+  var LEVEL = ["", "beginner, TTMIK level 1-2", "TTMIK level 3-4", "gemiddeld, TTMIK level 5-7"];
+
+  var KDAYS = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
+  var NLDAYS = ["zondag", "maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag"];
+
+  var state = { start: null, done: {} };
+  var KEY = "koreaans-vandaag-v1";
+  function load() {
+    try { var s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s) { state.start = s.start || null; state.done = s.done || {}; } } catch (e) {}
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+  function iso(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+  function parseIso(s) { var p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function dayNum(d) { return Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000); }
+
+  function position(date) {
+    var start = parseIso(state.start);
+    var d = dayNum(date) - dayNum(start);
+    if (d < 0) return { before: true, d: 0, week: 1, phase: 0, month: 1, dayInWeek: 1, daysToStart: -d };
+    var week = Math.floor(d / 7) + 1;
+    var phase = week === 1 ? 0 : week <= 13 ? 1 : week <= 26 ? 2 : week <= 52 ? 3 : 4;
+    var month = Math.floor(d / 30.44) + 1;
+    if (phase === 3) month = Math.min(12, Math.max(7, month));
+    if (phase === 4) month = Math.min(18, Math.max(13, month));
+    return { before: false, d: d, week: week, phase: phase, month: month, dayInWeek: (d % 7) + 1, finished: week > 78 };
+  }
+
+  function prompt(phase, scenario, grammar) {
+    if (phase === 4) {
+      return "Je bent mijn Koreaanse gesprekspartner aan de telefoon. Ik ben gevorderd (TOPIK 3-4). Praat in natuurlijk tempo en met natuurlijke spreektaal. Gebruik 반말 of 존댓말 zoals past bij je rol. Onderbreek me niet voor fouten. Zeg ik \"stop\": geef in tekst mijn 5 belangrijkste fouten, 5 uitdrukkingen die natuurlijker hadden geklonken, en 5 nieuwe woorden uit het gesprek.\nScenario: " + scenario;
+    }
+    return "Je bent mijn Koreaanse gesprekspartner aan de telefoon. Mijn niveau: " + LEVEL[phase] + ". Regels:\n1. Praat alleen Koreaans in 해요-stijl, rustig, zinnen van maximaal 8 woorden, alleen woorden en grammatica binnen mijn niveau.\n2. Stel steeds één vraag en wacht op mijn antwoord.\n3. Maak ik een fout: zeg de correcte zin in het Koreaans, laat mij hem herhalen, en ga dan verder.\n4. Zeg ik \"Nederlands\": leg je laatste zin kort uit in het Nederlands.\n5. Zeg ik \"stop\": geef in tekst mijn 5 belangrijkste fouten met correctie, en 5 nuttige zinnen uit het gesprek met vertaling.\nGebruik in dit gesprek vooral deze grammatica: " + grammar + ".\nScenario: " + scenario;
+  }
+
+  function tasksFor(date) {
+    var p = position(date), dow = date.getDay(), t = [];
+    var sun = dow === 0;
+    if (p.phase === 0) {
+      var h = HANGUL[p.dayInWeek - 1];
+      t.push({ id: "les", title: "Hangul-les", min: 30, detail: h[0], apps: ["ttmik", "youtube"] });
+      t.push({ id: "schrijf", title: "Schrijven en typen", min: 15, detail: h[1], apps: ["naver"] });
+      t.push({ id: "lees", title: "Lezen en naspreken", min: 15, detail: "Lees woorden hardop en vergelijk met de audio in Naver. Geen romanisatie.", apps: ["naver"] });
+      return t;
+    }
+    if (p.phase === 1) {
+      var g1 = F1[p.week] || F1[13];
+      var nw = p.week <= 5 ? 10 : 15;
+      if (sun) {
+        t.push({ id: "anki", title: "Anki", min: 15, detail: "Alleen reviews, geen nieuwe kaarten.", apps: ["anki"] });
+        t.push({ id: "gram", title: "Grammatica van de week doorlezen", min: 10, detail: g1[0], apps: ["ttmik"], optional: true });
+        return t;
+      }
+      t.push({ id: "anki", title: "Anki", min: 15, detail: "Alle reviews, daarna " + nw + " nieuwe kaarten uit het frequentiedeck.", apps: ["anki"] });
+      t.push({ id: "gram", title: "Grammatica", min: 20, detail: g1[0] + ". Uitleg lezen, 5 voorbeeldzinnen hardop, 3 eigen zinnen typen en checken.", apps: ["ttmik", "papago"] });
+      t.push({ id: "input", title: "Input", min: 15, detail: "Beginnersvideo met Koreaanse ondertitels (Go! Billy Korean, Easy Korean).", apps: ["youtube"] });
+      t.push({ id: "shadow", title: "Shadowing", min: 10, detail: "15 seconden uit die video naspreken tot het vloeiend gaat.", apps: ["youtube", "recorder"] });
+      if (dow === 6 && F1CALL[p.week]) {
+        t.push({ id: "call", title: "AI-gesprek", min: 10, optional: true, call: { scenario: F1CALL[p.week][0], grammar: F1CALL[p.week][1] } });
+      }
+      t.push({ id: "luister", title: "Luisteren tijdens dode tijd", min: 30, optional: true, detail: "Podcast of de audio van de video van vandaag, tijdens gym, hardlopen of reizen.", apps: ["podcast", "youtube"] });
+      return t;
+    }
+    if (p.phase === 2) {
+      var g2 = F2[p.week] || F2[26];
+      if (sun) { t.push({ id: "anki", title: "Anki", min: 15, detail: "Alleen reviews.", apps: ["anki"] }); return t; }
+      t.push({ id: "anki", title: "Anki", min: 15, detail: "Reviews, 10 nieuwe uit het deck, 5 zelf gemijnde zinnen.", apps: ["anki"] });
+      t.push({ id: "gram", title: "Grammatica en Hanja", min: 15, detail: g2[0] + ". Hanja: " + g2[1] + "; per wortel 3 woorden opzoeken.", apps: ["ttmik", "naver"] });
+      if (dow === 6) {
+        var c2 = F2CALL[p.week] || F2CALL[26];
+        t.push({ id: "call", title: "AI-gesprek", min: 20, detail: "Vervangt input en shadowing vandaag.", call: { scenario: c2[0], grammar: c2[1] } });
+      } else {
+        t.push({ id: "input", title: "Input en minen", min: 20, detail: "Easy Korean of beginnerspodcast" + (p.week >= 20 ? ", of een webtoon in het Koreaans" : "") + ". Sla 3 tot 5 zinnen op in Anki.", apps: ["youtube", "naver", "anki"] });
+        t.push({ id: "shadow", title: "Shadowing", min: 10, detail: "Fragment van 30 seconden naspreken en opnemen.", apps: ["youtube", "recorder"] });
+      }
+      t.push({ id: "luister", title: "Luisteren tijdens dode tijd", min: 30, optional: true, detail: "Podcast tijdens gym, hardlopen of reizen.", apps: ["podcast"] });
+      return t;
+    }
+    if (p.phase === 3) {
+      var m3 = F3[p.month];
+      if (sun) {
+        t.push({ id: "anki", title: "Anki", min: 15, detail: "Alleen reviews.", apps: ["anki"] });
+        t.push({ id: "fun", title: "Een aflevering voor de lol", min: 45, optional: true, detail: "Met Koreaanse ondertitels.", apps: ["netflix", "youtube"] });
+        return t;
+      }
+      t.push({ id: "anki", title: "Anki", min: 15, detail: "Reviews, 5 tot 10 gemijnde zinnen en Hanja-woorden.", apps: ["anki"] });
+      t.push({ id: "gram", title: "Grammatica", min: 10, detail: m3[0] + ". Zoek zinnen met deze punten in je content.", apps: ["ttmik", "naver"] });
+      t.push({ id: "input", title: "Input", min: 25, detail: "Drama, variété of webtoon. Eerst met Koreaanse ondertitels, daarna alleen luisteren.", apps: ["netflix", "youtube"] });
+      if (dow === 3 || dow === 6) {
+        t.push({ id: "call", title: "AI-gesprek", min: 20, detail: "Vervangt het output-blok vandaag.", call: { scenario: dow === 3 ? m3[2] : m3[3], grammar: m3[0] } });
+      } else if (dow === 1 || dow === 5) {
+        t.push({ id: "output", title: "Schrijven", min: 10, detail: "5 zinnen over je dag schrijven en laten corrigeren.", apps: ["claude"] });
+      } else {
+        t.push({ id: "output", title: "Shadowing", min: 10, detail: "Fragment uit je aflevering naspreken en opnemen.", apps: ["recorder"] });
+      }
+      t.push({ id: "luister", title: "Luisteren tijdens dode tijd", min: 30, optional: true, detail: "Audio van je aflevering of een podcast.", apps: ["podcast"] });
+      return t;
+    }
+    var m4 = F4[p.month];
+    if (sun) { t.push({ id: "fun", title: "Vrij kijken", min: 45, optional: true, detail: "Wat je leuk vindt, zonder ondertitels waar het lukt.", apps: ["netflix", "youtube"] }); return t; }
+    t.push({ id: "anki", title: "Anki", min: 10, detail: "Reviews en gemijnde zinnen.", apps: ["anki"] });
+    t.push({ id: "input", title: "Input", min: 35, detail: "Dramas, YouTube, podcasts of webtoons. Focus deze maand: " + m4[0] + ".", apps: ["netflix", "youtube"] });
+    if (dow === 2 || dow === 5) {
+      t.push({ id: "call", title: "AI-gesprek", min: 30, detail: "Vervangt het spreekblok vandaag.", call: { scenario: dow === 2 ? m4[1] : m4[2], grammar: m4[0] } });
+    } else {
+      t.push({ id: "spreek", title: "Spreken", min: 15, detail: "1 minuut hardop samenvatten wat je net keek, opnemen, terugluisteren.", apps: ["recorder"] });
+    }
+    return t;
+  }
+
+  function required(date) { return tasksFor(date).filter(function (x) { return !x.optional; }); }
+  function isComplete(date) {
+    var key = iso(date), done = state.done[key] || [];
+    var req = required(date);
+    return req.length > 0 && req.every(function (x) { return done.indexOf(x.id) >= 0; });
+  }
+  function streak(today) {
+    var n = 0, d = new Date(today);
+    if (!isComplete(d)) d.setDate(d.getDate() - 1);
+    var start = parseIso(state.start);
+    while (dayNum(d) >= dayNum(start) && isComplete(d)) { n++; d.setDate(d.getDate() - 1); }
+    return n;
+  }
+
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function chip(key) {
+    var a = APPS[key], h = href(key);
+    if (!h) return el("span", "chip", IS_ANDROID && PKG[key] && PKG[key].launch ? "Open " + (a.sub || a.label) : a.label);
+    var link = el("a", "chip", a.label); link.href = h; setTarget(link, h); return link;
+  }
+  var CHECK_SVG = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5" stroke="var(--surface)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+  function render() {
+    var today = new Date(), key = iso(today), p = position(today);
+    var dow = today.getDay();
+    document.getElementById("kdate").textContent = (today.getMonth() + 1) + "월 " + today.getDate() + "일 " + KDAYS[dow];
+    var phaseNames = ["Fase 0 · Hangul", "Fase 1 · Fundament", "Fase 2 · Opbouwen", "Fase 3 · Echte content", "Fase 4 · Vloeiend worden"];
+    document.getElementById("phasePill").textContent = phaseNames[p.phase];
+    document.getElementById("weekLabel").textContent = p.before ? "Start over " + p.daysToStart + (p.daysToStart === 1 ? " dag" : " dagen") : (p.phase === 0 ? "Dag " + p.dayInWeek + " van 7" : (p.phase >= 3 ? "Maand " + p.month + " · week " + p.week : "Week " + p.week));
+    var s = streak(today);
+    document.getElementById("streak").textContent = s > 0 ? s + (s === 1 ? " dag" : " dagen") + " op rij" : "";
+
+    var focus = document.getElementById("focus"); focus.innerHTML = "";
+    var lab, main, sub;
+    if (p.phase === 0) { var h = HANGUL[p.dayInWeek - 1]; lab = "Vandaag leer je"; main = h[0]; sub = h[1]; }
+    else if (p.phase === 1) { var g = F1[p.week] || F1[13]; lab = "Deze week · grammatica"; main = g[0]; sub = "Woordenschat: " + g[1]; }
+    else if (p.phase === 2) { var g2 = F2[p.week] || F2[26]; lab = "Deze week · grammatica"; main = g2[0]; sub = "Hanja-wortels: " + g2[1]; }
+    else if (p.phase === 3) { var m = F3[p.month]; lab = "Deze maand · grammatica"; main = m[0]; sub = "Woordthema: " + m[1] + " · 10 nieuwe Hanja-wortels"; }
+    else { lab = "Deze maand · focus"; main = F4[p.month][0]; sub = p.finished ? "Plan van 18 maanden afgerond. Blijf dagelijks input en Anki doen." : "Input en spreken staan centraal."; }
+    if (p.before) lab = "Eerste dag · " + lab.toLowerCase();
+    focus.appendChild(el("div", "label", lab));
+    focus.appendChild(el("div", "focus-main", main));
+    focus.appendChild(el("div", "focus-sub", sub));
+    focus.appendChild(el("div", "milestone", MILESTONES[p.phase]));
+
+    var tasks = tasksFor(p.before ? parseIso(state.start) : today);
+    var done = state.done[key] || [];
+    var list = document.getElementById("tasks"); list.innerHTML = "";
+    tasks.forEach(function (t) {
+      var isDone = done.indexOf(t.id) >= 0;
+      var li = el("li", "task" + (isDone ? " done" : ""));
+      var btn = el("button", "check"); btn.type = "button";
+      btn.setAttribute("aria-pressed", isDone ? "true" : "false");
+      btn.setAttribute("aria-label", (isDone ? "Markeer als niet gedaan: " : "Markeer als gedaan: ") + t.title);
+      btn.innerHTML = '<span class="box">' + CHECK_SVG + "</span>";
+      btn.addEventListener("click", function () { toggle(key, t.id); });
+      li.appendChild(btn);
+      var head = el("div", "task-head");
+      var title = el("span", "task-title", t.title);
+      if (t.optional) title.appendChild(el("span", "opt", "extra"));
+      head.appendChild(title);
+      head.appendChild(el("span", "mins", t.min + " min"));
+      li.appendChild(head);
+      var body = el("div", "task-body");
+      if (t.detail) body.appendChild(el("div", "task-detail", t.detail));
+      if (t.call) {
+        var c = el("div", "call");
+        c.appendChild(el("div", "call-scn", "Scenario: " + t.call.scenario));
+        c.appendChild(el("div", "call-gr", "Grammatica: " + t.call.grammar));
+        var row = el("div", "row");
+        var cp = el("button", "btn", "Kopieer belscript"); cp.type = "button";
+        var msg = el("span", "copied"); msg.hidden = true;
+        var text = prompt(p.phase, t.call.scenario, t.call.grammar);
+        cp.addEventListener("click", function () {
+          function fallback() {
+            var ta = c.querySelector("textarea");
+            if (!ta) { ta = el("textarea", "fallback"); ta.readOnly = true; ta.value = text; c.appendChild(ta); }
+            ta.focus(); ta.select();
+            msg.textContent = "Selecteer en kopieer de tekst hieronder."; msg.hidden = false;
+          }
+          try {
+            navigator.clipboard.writeText(text).then(function () { msg.textContent = "Gekopieerd. Plak in ChatGPT, start dan de spraakmodus."; msg.hidden = false; }, fallback);
+          } catch (e) { fallback(); }
+        });
+        row.appendChild(cp);
+        c.appendChild(row);
+        c.appendChild(msg);
+        var ch = el("div", "chips"); ch.appendChild(chip("chatgpt")); ch.appendChild(chip("gliglish"));
+        c.appendChild(ch);
+        body.appendChild(c);
+      } else if (t.apps && t.apps.length) {
+        var chips = el("div", "chips"); t.apps.forEach(function (a) { chips.appendChild(chip(a)); });
+        body.appendChild(chips);
+      }
+      li.appendChild(body);
+      list.appendChild(li);
+    });
+
+    var req = tasks.filter(function (x) { return !x.optional; });
+    var nDone = req.filter(function (x) { return done.indexOf(x.id) >= 0; }).length;
+    var mins = req.reduce(function (a, x) { return a + x.min; }, 0);
+    var prog = document.getElementById("progress"); prog.innerHTML = "";
+    req.forEach(function (x) { var sp = el("span", done.indexOf(x.id) >= 0 ? "on" : ""); prog.appendChild(sp); });
+    document.getElementById("progressLabel").textContent = nDone === req.length && req.length ? "Klaar voor vandaag. 잘했어요!" : nDone + " van " + req.length + " taken · " + mins + " min vandaag (" + NLDAYS[dow] + ")";
+  }
+
+  function toggle(key, id) {
+    var arr = state.done[key] || [];
+    var i = arr.indexOf(id);
+    if (i >= 0) arr.splice(i, 1); else arr.push(id);
+    state.done[key] = arr;
+    save(); render();
+  }
+
+  function renderApps() {
+    var g = document.getElementById("apps");
+    APP_GRID.forEach(function (k) {
+      var a = APPS[k], h = href(k); if (!h) return;
+      var link = el("a", "app"); link.href = h; setTarget(link, h);
+      link.appendChild(el("b", null, a.label)); link.appendChild(el("small", null, a.sub)); g.appendChild(link);
+    });
+  }
+
+  load();
+  if (!state.start) { state.start = iso(new Date()); save(); }
+  var input = document.getElementById("startDate");
+  input.value = state.start;
+  input.addEventListener("change", function () { if (input.value) { state.start = input.value; save(); render(); } });
+  document.getElementById("resetToday").addEventListener("click", function () {
+    delete state.done[iso(new Date())]; save(); render();
+    var m = document.getElementById("resetMsg"); m.hidden = false; setTimeout(function () { m.hidden = true; }, 1500);
+  });
+  renderApps();
+  render();
+  var shown = iso(new Date());
+  function refreshIfNewDay() { var now = iso(new Date()); if (now !== shown) { shown = now; render(); } }
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) refreshIfNewDay(); });
+  window.addEventListener("focus", refreshIfNewDay);
+  setInterval(refreshIfNewDay, 60000);
+})();
+</script>
+
+</body>
+</html>
